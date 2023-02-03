@@ -81,38 +81,40 @@ class Browser:
 
 
   def run(self):
-    total_steps = len(self._config["steps"])
-    total_actions = functools.reduce(lambda a, b: a + len(b["actions"]), self._config["steps"], 0)
+    total_steps = len(self._config["steps"] if "steps" in self._config and type(self._config["steps"]) == list else [])
+    total_actions = functools.reduce(lambda a, b: a + len(b["actions"] if "actions" in b and type(b["actions"]) == list else []), self._config["steps"], 0)
 
     with Progress() as progress:
       steps_task = progress.add_task("[green]Executing steps...", total=total_steps)
       action_task = progress.add_task("[blue]Executing actions...", total=total_actions)
 
-      for step_config in self._config["steps"]:
-        url = [self._config["general"]["base_url"].strip("/"), step_config["uri"].lstrip("/")]
-        url = self._parse_value('/'.join(url))
+      if "steps" in self._config and type(self._config["steps"]) == list:
+        for step_config in self._config["steps"]:
+          url = [self._config["general"]["base_url"].strip("/"), step_config["uri"].lstrip("/")]
+          url = self._parse_value('/'.join(url))
 
-        self._browser.get(url)
-        self._check_for_errors()
+          self._browser.get(url)
+          self._check_for_errors()
 
-        for action in step_config["actions"]:
-          element = self._browser.find_element(self.BY_EQUIVALENCES[action["by"]["method"]], self._parse_value(action["by"]["value"]))
+          if "actions" in step_config and type(step_config["actions"]) == list:
+            for action in step_config["actions"]:
+              element = self._browser.find_element(self.BY_EQUIVALENCES[action["by"]["method"]], self._parse_value(action["by"]["value"]))
 
-          if "type" in action:
-            element.send_keys(self._parse_value(action["type"]))
+              if "type" in action:
+                element.send_keys(self._parse_value(action["type"]))
 
-          if "click" in action:
-            element.click()
+              if "click" in action:
+                element.click()
 
-          if "submit" in action:
-            element.submit()
+              if "submit" in action:
+                element.submit()
 
-          if "wait_download_for" in action:
-            self.set_computed("downloaded_files", self._wait_download_for(action["wait_download_for"]))
+              if "wait_download_for" in action:
+                self.set_computed("downloaded_files", self._wait_download_for(action["wait_download_for"]))
 
-          progress.update(action_task, advance=1.0)
+              progress.update(action_task, advance=1.0)
 
-        progress.update(steps_task, advance=1.0)
+          progress.update(steps_task, advance=1.0)
 
 if __name__ == "__main__":
   browser = Browser("/home/kevocde/Documents/Projects/BitsAmericas/TBO_Regional_2023/scripts/automatization/config/steps.yml")
