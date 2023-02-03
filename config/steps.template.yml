@@ -21,12 +21,18 @@ steps:
     uri: '/login'
     actions:
       -
-        by: '/xpath/to/username'
+        by:
+          method: 'xpath'
+          value: '/xpath/to/username'
         type: '${your_varable_name}'
       -
-        by: '/exaple/to/password'
+        by:
+          method: 'xpath'
+          value: '/xpath/to/password'
         type: '${password}'
       -
-        by: '/xpath/to/login_button'
+        by:
+          method: 'xpath'
+          value: '/xpath/to/login_button'
         click: true
 
