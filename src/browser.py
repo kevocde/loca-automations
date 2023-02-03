@@ -31,19 +31,24 @@ class Browser:
     return webdriver.Chrome(self._config["general"]["browser"]["driver"], chrome_options=options)
 
 
-  def _wait_download_for(self, timeout: int, download_dir: str = None) -> None:
+  def _wait_download_for(self, timeout: int, download_dir: str = None) -> set[str]:
     seconds = 0
     download_complete = False
 
     if not download_dir:
       download_dir = self._parse_value(self._config["general"]["variables"]["download_dir"])
 
-    to_ignore = len(re.findall(".crdownload", "|".join(os.listdir(download_dir))))
+    files_before = set(os.listdir(download_dir))
+    current_files = set()
+    to_ignore = len(re.findall(".crdownload", "|".join(files_before)))
 
     while not download_complete and seconds < timeout:
       time.sleep(1)
       seconds += 1
-      download_complete = not (len(re.findall(".crdownload", "|".join(os.listdir(download_dir)))) - to_ignore)
+      current_files = set(os.listdir(download_dir))
+      download_complete = not (len(re.findall(".crdownload", "|".join(current_files))) - to_ignore)
+
+    return ["{}/{}".format(download_dir.rstrip("/"), file) for file in (current_files - files_before)]
 
 
   def _parse_value(self, value: any) -> str:
@@ -57,10 +62,22 @@ class Browser:
       )
 
 
+  def get_computed(self, key: str, default: any = None) -> any:
+    return self._config["general"]["computed"][key] if key in self._config["general"]["computed"] else default
+
+
+  def set_computed(self, key: str, value: any) -> None:
+    if not self._config["general"]["computed"]:
+      self._config["general"]["computed"] = {}
+
+    self._config["general"]["computed"][key] = value
+
+
   def _check_for_errors(self) -> None:
     # Check ssl error
     if "ERR_CERT_AUTHORITY_INVALID" in self._browser.page_source:
       self._browser.find_element(By.ID, "proceed-link").click()
+
 
   def run(self):
     with self._browser as browser:
@@ -85,7 +102,7 @@ class Browser:
             element.submit()
 
           if "wait_download_for" in action:
-            self._wait_download_for(action["wait_download_for"], (action["download_dir"] if "download_dir" in action else None))
+            self.set_computed("downloaded_files", self._wait_download_for(action["wait_download_for"]))
 
 
 if __name__ == "__main__":
