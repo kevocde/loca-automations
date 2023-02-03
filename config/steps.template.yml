@@ -1,0 +1,32 @@
+general:
+  browser:
+    type: 'chrome'
+    driver: '/your_driver_path'
+    options:
+      binary_location: '/your_browser_path'
+    arguments:
+      headless: false
+    preferences:
+      ':download':
+      directory_upgrade: true
+      prompt_for_download: false
+      download.default_directory: '/your_download_path'
+  base_url: ''
+  variables:
+    variable_name: 'variable_value'
+
+steps:
+  -
+    name: 'Login in the site'
+    uri: '/login'
+    actions:
+      -
+        by: '/xpath/to/username'
+        type: '${your_varable_name}'
+      -
+        by: '/exaple/to/password'
+        type: '${password}'
+      -
+        by: '/xpath/to/login_button'
+        click: true
+
