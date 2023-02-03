@@ -4,7 +4,10 @@ from seleniumwire import webdriver
 from selenium.webdriver.common.by import By
 
 
+
 class Browser:
+  BY_EQUIVALENCES = {"xpath": By.XPATH, 'id': By.ID, 'name': By.NAME, 'class': By.CLASS_NAME, 'tag': By.TAG_NAME, 'link': By.LINK_TEXT, 'partial_link': By.PARTIAL_LINK_TEXT, 'css': By.CSS_SELECTOR}
+
   def __init__(self, config: dict) -> None:
     self._config = config
     self._browser = self._load_browser_driver()
@@ -70,7 +73,7 @@ class Browser:
         self._check_for_errors()
 
         for action in step_config["actions"]:
-          element = self._browser.find_element(By.XPATH, action["by"])
+          element = self._browser.find_element(self.BY_EQUIVALENCES[action["by"]["method"]], self._parse_value(action["by"]["value"]))
 
           if "type" in action:
             element.send_keys(self._parse_value(action["type"]))

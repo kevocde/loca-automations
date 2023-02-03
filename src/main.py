@@ -28,8 +28,16 @@ def update_db(config: str = None, environment: str = "dev", countries: str = Non
   config = config if config else "./config.yaml"
 
   for country in countries:
+    username = typer.prompt(f"Username for {country}")
+    password = typer.prompt(f"Password for {country}", hide_input=True)
+
     download_backup(
-      pathlib.Path(config).absolute(), environment=environment, country=country)
+      pathlib.Path(config).absolute(),
+      environment=environment,
+      country=country,
+      username=username,
+      password=password
+    )
 
 
 @app.command("describe")

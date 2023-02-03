@@ -1,3 +1,4 @@
 **/env
 **/steps.yml
 **/__pycache__
+**/backups/*
