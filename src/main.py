@@ -44,24 +44,34 @@ def load_backup(site_path: str, file_path: str):
 
 
 @app.command("update:db")
-def update_db(config: str = None, environment: str = "dev", countries: str = None):
+def update_db(config: str = None, environments: str = None, countries: str = None):
   countries = countries.split(",") if countries else ["bo", "co", "gt", "hn", "ni", "pa", "py", "sv"]
+  environments = environments.split(",") if environments else ["dev", "qa", "stg"]
   config = config if config else "./config.yaml"
 
-  for country in countries:
-    username = typer.prompt(f"Username for {country}")
-    password = typer.prompt(f"Password for {country}", hide_input=True)
-    site_path = typer.prompt(f"Enter the site path for {country}")
+  for environment in environments:
+    print(f"[bold green][Executing for {environment} environment ...][/bold green]")
 
-    downloaded_files = download_backup(
-      pathlib.Path(config).absolute(),
-      environment=environment,
-      country=country,
-      username=username,
-      password=password
-    )
+    for country in countries:
+      print(f"[bold blue][Downloading backup from {country} site ...][/bold blue]")
 
-    load_backup(site_path, downloaded_files.pop())
+      username = typer.prompt(f"Username")
+      password = typer.prompt(f"Password", hide_input=True)
+      site_path = typer.prompt(f"Enter the site path")
+
+      downloaded_files = download_backup(
+        pathlib.Path(config).absolute(),
+        environment=environment,
+        country=country,
+        username=username,
+        password=password
+      )
+
+      load_backup(site_path, downloaded_files.pop())
+
+      print("[bold blue][Done country][/bold blue]")
+
+    print(f"[bold green][Done environment][/bold green]")
 
 
 @app.command("describe")

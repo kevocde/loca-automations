@@ -1,5 +1,6 @@
-import time, os, re
+import time, os, re, functools
 from rich import print
+from rich.progress import Progress
 from seleniumwire import webdriver
 from selenium.webdriver.common.by import By
 
@@ -80,12 +81,17 @@ class Browser:
 
 
   def run(self):
-    with self._browser as browser:
+    total_steps = len(self._config["steps"])
+    total_actions = functools.reduce(lambda a, b: a + len(b["actions"]), self._config["steps"], 0)
+
+    with Progress() as progress:
+      steps_task = progress.add_task("[green]Executing steps...", total=total_steps)
+      action_task = progress.add_task("[blue]Executing actions...", total=total_actions)
+
       for step_config in self._config["steps"]:
         url = [self._config["general"]["base_url"].strip("/"), step_config["uri"].lstrip("/")]
         url = self._parse_value('/'.join(url))
 
-        print("[green]Running the step:[/green] {}".format(step_config["name"]))
         self._browser.get(url)
         self._check_for_errors()
 
@@ -104,6 +110,9 @@ class Browser:
           if "wait_download_for" in action:
             self.set_computed("downloaded_files", self._wait_download_for(action["wait_download_for"]))
 
+          progress.update(action_task, advance=1.0)
+
+        progress.update(steps_task, advance=1.0)
 
 if __name__ == "__main__":
   browser = Browser("/home/kevocde/Documents/Projects/BitsAmericas/TBO_Regional_2023/scripts/automatization/config/steps.yml")
