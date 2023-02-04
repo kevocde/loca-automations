@@ -85,8 +85,8 @@ class Browser:
     total_actions = functools.reduce(lambda a, b: a + len(b["actions"] if "actions" in b and type(b["actions"]) == list else []), self._config["steps"], 0)
 
     with Progress() as progress:
-      steps_task = progress.add_task("[green]Executing steps...", total=total_steps)
-      action_task = progress.add_task("[blue]Executing actions...", total=total_actions)
+      steps_task = progress.add_task("Executing steps...", total=total_steps)
+      action_task = progress.add_task("Executing actions...", total=total_actions)
 
       if "steps" in self._config and type(self._config["steps"]) == list:
         for step_config in self._config["steps"]:

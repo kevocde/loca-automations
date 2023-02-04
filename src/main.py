@@ -1,4 +1,4 @@
-import sys, pathlib, typer, yaml, gzip, shutil, os, subprocess
+import sys, pathlib, typer, yaml, gzip, shutil, functools, subprocess
 
 from browser import Browser
 from rich import print
@@ -72,6 +72,52 @@ def update_db(config: str = None, environments: str = None, countries: str = Non
       print("[bold blue][Done country][/bold blue]")
 
     print(f"[bold green][Done environment][/bold green]")
+
+@app.command("auto-update:db")
+def auto_update_db(sites_config: str, environments: str = None, countries: str = None):
+  sites_config = validate_path(sites_config, "[red]The sites config file doesn't exist[/red]")
+  sites_config = load_config_file(sites_config)
+  general_config = load_config_file(sites_config["config_file"])
+
+  if not environments:
+    available_environments = [env["id"] for env in sites_config["environments"].values()]
+  else:
+    available_environments = environments.split(",")
+
+  if not countries:
+    available_countries = set([country["id"] for env in sites_config["environments"].values() for country in env["countries"].values()])
+  else:
+    available_countries = countries.split(",")
+
+  for kenv, environment in sites_config["environments"].items():
+    if environment["id"] in available_environments:
+      print("[bold green][Updating {} environment ...][/bold green]".format(kenv))
+      general_config = merge(
+        general_config,
+        {"general": {"base_url": environment["template_url"]}}
+      )
+
+      for kcountry, country in environment["countries"].items():
+        if country["id"] in available_countries:
+          print("[bold blue][Updating {} country ...][/bold blue]".format(kcountry))
+          general_config = merge(
+            general_config,
+            {
+              "general": {
+                "variables": {
+                  "username": country["variables"]["username"],
+                  "password": country["variables"]["password"],
+                  "country": country["id"],
+                }
+              }
+            }
+          )
+          browser = Browser(general_config)
+          browser.run()
+          load_backup(country["location"], browser.get_computed("downloaded_files").pop())
+          print("[bold blue][Country updated][/bold blue]")
+
+      print(f"[bold green][Environment updated][/bold green]")
 
 
 @app.command("describe")
