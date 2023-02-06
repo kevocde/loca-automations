@@ -25,6 +25,7 @@ class WebDriverFacade:
 
 
   def _load_browser_props(self):
+    """Loads browser driver instance and options"""
     if self._config.get('general.browser.type') not in self.EQUVALENCES:
       raise Exception('Browser type not supported')
     else:
@@ -80,7 +81,6 @@ class WebDriverFacade:
             self._load_browser_method(opt_key, opt_value)
           else:
             self._load_browser_attribute(opt_key, opt_value)
-
 
 
   def _load_browser_driver(self):
