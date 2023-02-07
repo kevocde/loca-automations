@@ -5,6 +5,7 @@ from selenium.webdriver import ChromeOptions, FirefoxOptions, EdgeOptions, IeOpt
 from selenium.webdriver import Chrome, Firefox, Edge, Ie, WebKitGTK, Safari
 from selenium.webdriver.safari.options import Options as SafariOptions
 from .config import Config, BrowserType
+from .action_executor import ActionExecutor
 
 
 
@@ -22,6 +23,7 @@ class WebDriverFacade:
   def __init__(self, config: dict) -> None:
     self._config = Config(config)
     self._load_browser_props()
+    self._action_executor = ActionExecutor(self._driver, self._config)
 
 
   def _load_browser_props(self):
@@ -83,5 +85,10 @@ class WebDriverFacade:
             self._load_browser_attribute(opt_key, opt_value)
 
 
-  def _load_browser_driver(self):
-    pass
+  def run(self) -> None:
+    self._action_executor.run()
+
+
+  @property
+  def driver(self) -> ArgOptions | Chrome | Firefox | Edge | Ie | WebKitGTK | Safari:
+    return self._driver
