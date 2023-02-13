@@ -1,11 +1,13 @@
 from selenium.webdriver.remote.webdriver import WebDriver
 from .config import Config
+from .custom_web_driver_handler import CustomWebDriverHandler
 
 
 class ActionExecutor:
   def __init__(self, driver: WebDriver, config: Config) -> None:
     self._driver = driver
     self._config = config
+    self._custom_web_driver_handler = CustomWebDriverHandler()
 
 
   def run(self):
@@ -26,7 +28,14 @@ class ActionExecutor:
 
       if result and "handle" in action_config:
         for handle_key, handle_value in action_config["handle"].items():
-          self.call_method_dynamically(result, handle_key, handle_value)
+          if self._custom_web_driver_handler and hasattr(self._custom_web_driver_handler, handle_key) and callable(getattr(self._custom_web_driver_handler, handle_key)):
+            local_result = self.call_method_dynamically(self._custom_web_driver_handler, handle_key, {**{"element": result}, **handle_value})
+          else:
+            local_result = self.call_method_dynamically(result, handle_key, handle_value)
+
+          if "set_variable" in action_config:
+            self._config.set(action_config["set_variable"], local_result)
+            print(self._config.get(action_config["set_variable"]))
 
 
   @classmethod

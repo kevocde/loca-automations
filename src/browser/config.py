@@ -2,7 +2,7 @@ import re, json
 
 from enum import Enum
 from mergedeep import merge
-
+from collections import deque
 
 
 class BrowserType(Enum):
@@ -46,3 +46,22 @@ class Config:
         return default
 
     return buffer
+
+
+  def set(self, key: str, value: any, seed: any = None, calls: int = 0) -> any:
+    seed = self._raw_config if calls == 0 and not seed else seed
+    keys = key.split('.')
+    current = keys[-1]
+
+    if type(seed) == dict:
+      if current in seed:
+        seed[current] = value
+      else:
+        for local_key, local_value in seed.items():
+          seed[local_key] = self.set('.'.join(keys[1:]), value, local_value, calls + 1)
+          calls += 1
+    else:
+      if current:
+        seed = value
+
+    return seed
