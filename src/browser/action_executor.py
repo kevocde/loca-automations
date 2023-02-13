@@ -35,7 +35,6 @@ class ActionExecutor:
 
           if "set_variable" in action_config:
             self._config.set(action_config["set_variable"], local_result)
-            print(self._config.get(action_config["set_variable"]))
 
 
   @classmethod
