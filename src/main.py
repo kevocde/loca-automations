@@ -1,12 +1,11 @@
-import typer, pathlib, sys, yaml
-import site_sync
+import typer
 
 from yaml.loader import SafeLoader
 from site_sync import SiteSync
 
 
-app = typer.Typer()
 
+app = typer.Typer()
 
 @app.command('site:sync')
 def sync_site(env: str, country: str = "all", config_file: str = "./config/sites.yml"):
