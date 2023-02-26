@@ -81,8 +81,8 @@ class SiteSync:
     if len(backup_path):
       backup_path = pathlib.Path(backup_path[0])
       if backup_path.exists():
-        with gzip.open(backup_path, "rb") as f_in:
-          output_name = pathlib.Path(backup_path).parent.joinpath("uncompress.tmp")
+        with gzip.open(backup_path.absolute(), "rb") as f_in:
+          output_name = backup_path.parent.joinpath("uncompress.tmp")
           with open(output_name, "wb") as f_out:
             shutil.copyfileobj(f_in, f_out)
 
@@ -90,6 +90,8 @@ class SiteSync:
           "{} sql:drop -y ".format(self._config["general"]["drush_command"]),
           "{} sql:cli < {}".format(self._config["general"]["drush_command"], output_name),
           "{} cr".format(self._config["general"]["drush_command"]),
+          "rm {} -f".format(backup_path.absolute()),
+          "rm {} -f".format(output_name),
         ]
 
         self._run_commands(commands, country["local"])
