@@ -1,7 +1,6 @@
-import typer, subprocess
+import typer, subprocess, os
 
 from site_sync import SiteSync
-from cloud import server
 
 
 app = typer.Typer()
@@ -12,7 +11,7 @@ def sync_site(env: str, country: str = "all", config_file: str = "./config/sites
     site_sync.run()
 
 @app.command('cloud:start')
-def cloud_start(bind: str = typer.Argument("0.0.0.0:8000", envvar="CLOUD_BIND")):
+def cloud_start(bind: str = typer.Argument("0.0.0.0:8000", envvar="CLOUD_BIND"), auths: str = typer.Argument("", envvar="CLOUD_AUTHS")):
     gunicorn_cmd = "gunicorn 'src.cloud:create_app()' -b {}".format(bind)
     subprocess.run(gunicorn_cmd, shell=True, check=True)
 
