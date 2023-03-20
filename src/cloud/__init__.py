@@ -1,16 +1,13 @@
 from flask import Flask, request
+from .slack.routes import slack
 
 
 server = Flask(__name__)
+server.register_blueprint(slack)
 
 @server.route('/')
-def welcome_page():
+def print_welcome_page():
   return 'Welcome to the Cloud Webhook by Kevocde'
-
-@server.route('/slack/validation', methods=['POST'])
-def validate_slack_app():
-  data = request.get_json()
-  return data['challenge']
 
 def create_app():
   return server
